@@ -11,6 +11,8 @@ import Players from './pages/Players.jsx';
 import PlayerProfile from './pages/PlayerProfile.jsx';
 import { EventList, EventRecap } from './pages/Events.jsx';
 import Faq from './pages/Faq.jsx';
+import Shop from './pages/Shop.jsx';
+import { SHOP_ENABLED } from './merch.js';
 
 function NotFound() {
   return <div className="wrap page-head"><h1>Nothing here</h1><p><Link to="/">Back home</Link></p></div>;
@@ -31,6 +33,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="events" element={<EventList />} />
             <Route path="events/:id" element={<EventRecap />} />
             <Route path="faq" element={<Faq />} />
+            {SHOP_ENABLED && <Route path="shop" element={<Shop />} />}
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

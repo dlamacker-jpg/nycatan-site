@@ -4,6 +4,8 @@ import { seasonStandings, formatRange } from '../lib/stats.js';
 import { REGISTER_URL, NATIONAL_HONORS, VIDEOS, DAY_STEPS } from '../content.js';
 import { PlayerLink, RankHex, PlayIcon, initials } from '../components/bits.jsx';
 import { VIS } from '../lib/visibility.js';
+import { SHOP_ENABLED, MERCH, PICKUP_NOTE } from '../merch.js';
+import { Art } from './Shop.jsx';
 
 export default function Home() {
   const { model } = useData();
@@ -182,6 +184,25 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {SHOP_ENABLED && (
+        <section className="wrap section home-shop">
+          <div>
+            <div className="eyebrow">Shop</div>
+            <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: 800, marginTop: 8 }}>Rep the tables</h2>
+            <p style={{ color: 'var(--ink-2)', marginTop: 12, fontSize: 17 }}>{PICKUP_NOTE}</p>
+            <Link className="btn btn-ghost" to="/shop" style={{ marginTop: 20 }}>See the merch</Link>
+          </div>
+          <div className="thumbs">
+            {MERCH.slice(0, 3).map((m) => (
+              <Link key={m.id} to="/shop" aria-label={m.name} className="shop-art" style={{ textDecoration: 'none', color: 'var(--ink)', background: '#fff' }}>
+                <Art kind={m.art} />
+                <span style={{ display: 'block', fontWeight: 600, fontSize: 15, padding: '10px 12px' }}>{m.name}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section id="first-timers" className="steps">
         <div className="wrap">

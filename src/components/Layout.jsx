@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { REGISTER_URL } from '../content.js';
 import { useData } from '../lib/DataContext.jsx';
 import { IS_PREVIEW } from '../lib/visibility.js';
+import { SHOP_ENABLED } from '../merch.js';
 
 const LINKS = [
   ['/', 'Home'],
@@ -10,7 +11,8 @@ const LINKS = [
   ['/hall-of-fame', 'Hall of Fame'],
   ['/players', 'Players'],
   ['/events', 'Results'],
-  ['/faq', 'Rules & FAQ']
+  ['/faq', 'Rules & FAQ'],
+  ...(SHOP_ENABLED ? [['/shop', 'Shop']] : [])
 ];
 
 export function Brand({ light }) {

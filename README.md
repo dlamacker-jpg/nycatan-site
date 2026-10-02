@@ -74,3 +74,20 @@ Lines marked `[ORGANIZER: ...]` need answers: entry fee, refunds, late policy, w
 - Season points scale (`src/content.js`, `SEASON_POINTS`) is a proposal: champion 100, final table 60, semifinal 35, 10 per prelim win, 5 for playing.
 - "Best day counts" applies to two-day qualifiers; one-day events have a single prelim day.
 - Player identity is the name string. If BCP exposes a stable player ID, switch to that.
+
+## Shop
+
+`src/merch.js`. Items, prices and a `buyUrl` per item. Checkout happens off-site (Stripe Payment Link,
+Shopify, or the existing Squarespace store); this app never touches payments. Empty `buyUrl` shows
+"Coming soon". Set `SHOP_ENABLED = false` to hide the shop entirely.
+
+Trademark: CATAN is a registered mark of CATAN GmbH. The merch designs avoid the word and all CATAN
+artwork. Get CATAN Studio's OK before selling anything printed with "NYCatan".
+
+## Domain
+
+- Demo: Railway's free `*.up.railway.app` domain (Settings > Networking > Generate Domain).
+- Production: nycatan.com stays with its owner. In Railway, add `nycatan.com` and `www.nycatan.com` as
+  custom domains, then add the CNAME and TXT records Railway shows at the domain's DNS provider.
+  The bare `nycatan.com` needs a provider that supports CNAME flattening or ALIAS records;
+  Railway's docs recommend Cloudflare if the current provider can't.
