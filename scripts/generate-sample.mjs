@@ -100,20 +100,20 @@ for (const [id, , , , , type] of events) {
   for (const d of days) {
     let field = byDay[d];
     field = field.slice(0, Math.floor(field.length / 4) * 4);
-    const rec = new Map(field.map((p) => [p.name, { p, day: d, wins: 0, vp: 0, tableVp: 0 }]));
+    const rec = new Map(field.map((p) => [p.name, { p, day: d, wins: 0, vp: 0, pct: 0 }]));
     for (let round = 1; round <= 3; round++) {
       const order = shuffle(field);
       for (let t = 0; t < order.length / 4; t++) {
         const res = playGame(order.slice(t * 4, t * 4 + 4));
         const total = res.reduce((a, b) => a + b.vp, 0);
-        res.forEach((r) => { const x = rec.get(r.p.name); x.wins += r.win; x.vp += r.vp; x.tableVp += total; });
+        res.forEach((r) => { const x = rec.get(r.p.name); x.wins += r.win; x.vp += r.vp; x.pct += r.vp / total; });
         addGame(id, 'prelim', d, round, t + 1, res);
       }
     }
     dayRecords.push(...rec.values());
   }
-  // Rank: wins, then total VP, then share of table VP. Best placing across days counts.
-  dayRecords.sort((a, b) => b.wins - a.wins || b.vp - a.vp || b.vp / b.tableVp - a.vp / a.tableVp);
+  // Official CATAN tiebreakers: wins, total VP, then summed per-game VP%. Best placing across days counts.
+  dayRecords.sort((a, b) => b.wins - a.wins || b.vp - a.vp || b.pct - a.pct || a.p.name.localeCompare(b.p.name));
   const seen = new Set();
   const cut = [];
   for (const r of dayRecords) {
@@ -139,9 +139,11 @@ const csv = (header, list) => [header.join(','), ...list.map((r) => header.map((
 }).join(','))].join('\n') + '\n';
 
 writeFileSync('public/data/games.csv', csv(['event_id', 'stage', 'day', 'round', 'table', 'seat', 'player', 'vp', 'win'], rows));
-const evHeader = ['event_id', 'name', 'season', 'start_date', 'end_date', 'type', 'venue', 'address', 'status'];
+// SAMPLE host assignment. Affiliated events from several organizers count toward one season.
+const hostFor = (type) => (type === 'Qualifier' ? 'Andrew' : type === 'Open' ? 'Tony' : 'Demar');
+const evHeader = ['event_id', 'name', 'season', 'start_date', 'end_date', 'type', 'organizer', 'venue', 'address', 'status', 'bcp_url'];
 writeFileSync('public/data/events.csv', csv(evHeader, [
-  ...events.map(([event_id, name, season, start_date, end_date, type]) => ({ event_id, name, season, start_date, end_date, type, venue: VENUE, address: ADDRESS, status: 'complete' })),
-  ...upcoming.map(([event_id, name, season, start_date, end_date, type]) => ({ event_id, name, season, start_date, end_date, type, venue: VENUE, address: ADDRESS, status: 'upcoming' }))
+  ...events.map(([event_id, name, season, start_date, end_date, type]) => ({ event_id, name, season, start_date, end_date, type, organizer: hostFor(type), venue: VENUE, address: ADDRESS, status: 'complete', bcp_url: '' })),
+  ...upcoming.map(([event_id, name, season, start_date, end_date, type]) => ({ event_id, name, season, start_date, end_date, type, organizer: hostFor(type), venue: VENUE, address: ADDRESS, status: 'upcoming', bcp_url: '' }))
 ]));
 console.log(`games.csv: ${rows.length} rows, events.csv: ${events.length + upcoming.length} events`);

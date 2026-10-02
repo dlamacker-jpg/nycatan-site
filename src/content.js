@@ -37,3 +37,16 @@ export const DAY_STEPS = [
   { time: '5:00pm', title: 'Semifinals', body: 'Four tables of four. Each table winner moves on.' },
   { time: 'Evening', title: 'The final', body: 'One game. At qualifiers, the winner earns a seat at the CATAN Regional Championship.' }
 ];
+
+// What the public site shows. Off by default after community feedback:
+// season ranks and career win rates can drive "rep blocking" (tables ganging up on known
+// strong players) and discourage players who rank low. Winners and finalists are always shown.
+// Organizers can preview everything with ?show=all (footer link).
+export const VISIBILITY = {
+  seasonRace: false, // season points table and leader chart
+  performanceStats: false, // win rate, average VP, prelim records on profiles and Hall of Fame
+  headToHead: false, // opponent records on player profiles
+  fullStandings: false // event pages list every player instead of only the top 16
+};
+
+export const OFFICIAL_RULES_URL = 'https://catanevents.com/cnc-rules';

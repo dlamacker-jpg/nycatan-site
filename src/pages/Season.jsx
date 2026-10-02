@@ -4,6 +4,7 @@ import { useData } from '../lib/DataContext.jsx';
 import { seasonStandings, formatRange } from '../lib/stats.js';
 import { SEASON_POINTS } from '../content.js';
 import { PlayerLink, RankHex, Segmented, pct } from '../components/bits.jsx';
+import { VIS } from '../lib/visibility.js';
 
 const SORTS = {
   points: (a, b) => b.points - a.points,
@@ -33,7 +34,7 @@ export default function Season() {
           <div>
             <div className="eyebrow">{season} season</div>
             <h1>Season standings</h1>
-            <p>Every NYCatan event this year counts. {done} done{events.length > done ? `, ${events.length - done} to go` : ''}.</p>
+            <p>Every affiliated NYCatan event this year. {done} done{events.length > done ? `, ${events.length - done} to go` : ''}.</p>
           </div>
           <Segmented label="Season" options={model.seasons.map((s) => [s, String(s)])} value={season} onChange={(s) => navigate(`/season/${s}`)} />
         </div>
@@ -48,6 +49,7 @@ export default function Season() {
               <span style={{ fontFamily: 'var(--display)', fontWeight: 600, fontSize: 21 }}>{e.name}</span>
               <span style={{ fontSize: 14, opacity: 0.85 }}>{formatRange(e.start_date, e.end_date)}</span>
               {e.champion && <span style={{ fontSize: 14 }}>Won by {e.champion}</span>}
+              <span style={{ fontSize: 13, opacity: 0.75 }}>Host: {e.organizer}</span>
             </div>
           );
           return e.status === 'complete'
@@ -56,6 +58,7 @@ export default function Season() {
         })}
       </div>
 
+      {VIS.seasonRace ? (
       <div className="split-8-4">
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
@@ -107,6 +110,27 @@ export default function Season() {
           </div>
         </aside>
       </div>
+      ) : (
+      <div>
+        <h2 style={{ fontSize: 28, fontWeight: 600, marginBottom: 16 }}>Final tables this season</h2>
+        <div className="table-scroll">
+          <table className="table">
+            <thead><tr><th>Event</th><th>Host</th><th>Champion</th><th className="hide-sm">Finalists</th></tr></thead>
+            <tbody>
+              {events.filter((e) => e.status === 'complete').map((e) => (
+                <tr key={e.id}>
+                  <td><Link to={`/events/${e.id}`}>{e.name}</Link></td>
+                  <td className="muted">{e.organizer}</td>
+                  <td><PlayerLink name={e.champion} /></td>
+                  <td className="hide-sm" style={{ fontSize: 14, color: 'var(--ink-2)' }}>{e.finalTable.filter((x) => !x.win).map((x) => x.player).join(', ')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="muted" style={{ fontSize: 14, marginTop: 12 }}>Every affiliated NYCatan event counts toward the season, whoever hosts it.</p>
+      </div>
+      )}
     </div>
   );
 }

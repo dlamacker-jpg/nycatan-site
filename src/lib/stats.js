@@ -10,7 +10,7 @@ export const finishRank = (f) => FINISH_ORDER[f] ?? 9;
 
 function rankPrelims(records) {
   return records.sort(
-    (a, b) => b.wins - a.wins || b.vp - a.vp || b.pct - a.pct || a.player.localeCompare(b.player)
+    (a, b) => b.wins - a.wins || b.vp - a.vp || b.pctSum - a.pctSum || a.player.localeCompare(b.player)
   );
 }
 
@@ -24,12 +24,13 @@ function buildEvent(event, games) {
   }
   for (const g of prelimGames) {
     const key = `${g.day}|${g.player}`;
-    if (!byDayPlayer.has(key)) byDayPlayer.set(key, { player: g.player, day: g.day, wins: 0, vp: 0, tableVp: 0, games: 0 });
+    if (!byDayPlayer.has(key)) byDayPlayer.set(key, { player: g.player, day: g.day, wins: 0, vp: 0, pctSum: 0, games: 0 });
     const r = byDayPlayer.get(key);
     r.wins += g.win; r.vp += g.vp; r.games += 1;
-    r.tableVp += tableTotals.get(`${g.day}|${g.round}|${g.table}`);
+    // Official VP%: your score / table total, summed across games.
+    r.pctSum += g.vp / tableTotals.get(`${g.day}|${g.round}|${g.table}`);
   }
-  const dayRecords = [...byDayPlayer.values()].map((r) => ({ ...r, pct: r.tableVp ? r.vp / r.tableVp : 0 }));
+  const dayRecords = [...byDayPlayer.values()].map((r) => ({ ...r, pct: r.games ? r.pctSum / r.games : 0 }));
   rankPrelims(dayRecords);
   // Best placing across days counts.
   const seen = new Set();

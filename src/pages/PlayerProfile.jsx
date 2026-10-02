@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useData } from '../lib/DataContext.jsx';
 import { formatDate, finishRank, seasonStandings } from '../lib/stats.js';
 import { PlayerLink, initials, pct } from '../components/bits.jsx';
+import { VIS } from '../lib/visibility.js';
 
 function drawCard(player, h) {
   const c = document.createElement('canvas');
@@ -22,7 +23,7 @@ function drawCard(player, h) {
   x.font = '600 70px "Bricolage Grotesque", sans-serif';
   x.fillText(player.name, 90, 730);
   x.fillStyle = '#CFC8BB'; x.font = '400 36px "IBM Plex Mono", monospace';
-  x.fillText(`Prelims ${h.record}   ${h.vp} VP`, 90, 800);
+  if (VIS.performanceStats) x.fillText(`Prelims ${h.record}   ${h.vp} VP`, 90, 800);
   x.fillStyle = '#9A958C'; x.font = '400 32px "IBM Plex Mono", monospace';
   x.fillText('nycatan.com', 90, 980);
   const a = document.createElement('a');
@@ -52,11 +53,12 @@ export default function PlayerProfile() {
   const best = player.history.slice().sort((a, b) => finishRank(a.finish) - finishRank(b.finish) || b.date.localeCompare(a.date))[0];
   const shareable = finishRank(best.finish) <= 2 ? best : null;
 
+  const sideCol = VIS.headToHead || VIS.seasonRace;
   const badges = [];
   if (player.titles) badges.push([`${player.titles}x Champion`, 'var(--wheat)', 'var(--ink)']);
   if (player.finals) badges.push([`${player.finals}x Final table`, 'var(--forest)', '#fff']);
   if (player.top16) badges.push([`${player.top16}x Top 16`, '#353943', 'var(--paper)']);
-  if (standing?.rank === 1) badges.push([`${season} season leader`, 'var(--brick)', '#fff']);
+  if (VIS.seasonRace && standing?.rank === 1) badges.push([`${season} season leader`, 'var(--brick)', '#fff']);
 
   return (
     <>
@@ -65,7 +67,7 @@ export default function PlayerProfile() {
           <span className="hex big">{initials(player.name)}</span>
           <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <span className="eyebrow" style={{ color: 'var(--wheat)' }}>
-              {standing ? `${season} season rank #${standing.rank}` : `Not yet active in ${season}`}  Playing since {firstYear}
+              {VIS.seasonRace && standing ? `${season} season rank #${standing.rank}  ` : ''}Playing since {firstYear}
             </span>
             <h1>{player.name}</h1>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -78,34 +80,45 @@ export default function PlayerProfile() {
       <div className="wrap">
         <div className="stat-strip" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           <div><div className="stat-num">{player.events}</div><div className="stat-label">events played</div></div>
-          <div><div className="stat-num">{player.games}</div><div className="stat-label">games</div></div>
-          <div><div className="stat-num">{pct(player.winRate)}</div><div className="stat-label">win rate (par is 25%)</div></div>
-          <div><div className="stat-num">{player.avgVp.toFixed(1)}</div><div className="stat-label">average VP</div></div>
-          <div><div className="stat-num">{player.titles}</div><div className="stat-label">titles</div></div>
+          {VIS.performanceStats ? (
+            <>
+              <div><div className="stat-num">{player.games}</div><div className="stat-label">games</div></div>
+              <div><div className="stat-num">{pct(player.winRate)}</div><div className="stat-label">win rate (par is 25%)</div></div>
+              <div><div className="stat-num">{player.avgVp.toFixed(1)}</div><div className="stat-label">average VP</div></div>
+            </>
+          ) : (
+            <>
+              <div><div className="stat-num">{firstYear}</div><div className="stat-label">first NYCatan event</div></div>
+              {player.top16 > 0 && <div><div className="stat-num">{player.top16}</div><div className="stat-label">top 16 cuts</div></div>}
+              {player.finals > 0 && <div><div className="stat-num">{player.finals}</div><div className="stat-label">final tables</div></div>}
+            </>
+          )}
+          {(VIS.performanceStats || player.titles > 0) && <div><div className="stat-num">{player.titles}</div><div className="stat-label">titles</div></div>}
         </div>
       </div>
 
-      <section className="wrap section split" style={{ paddingTop: 64 }}>
-        <div>
+      <section className={`wrap section ${sideCol ? 'split' : ''}`} style={{ paddingTop: 64 }}>
+        <div style={sideCol ? undefined : { maxWidth: 760 }}>
           <h2 style={{ fontSize: 30, fontWeight: 600, marginBottom: 16 }}>Event history</h2>
           <div className="table-scroll">
             <table className="table">
-              <thead><tr><th>Event</th><th className="num">Prelims</th><th className="num">VP</th><th>Finish</th><th className="num">Pts</th></tr></thead>
+              <thead><tr><th>Event</th>{VIS.performanceStats && <><th className="num">Prelims</th><th className="num">VP</th></>}<th>Finish</th>{VIS.seasonRace && <th className="num">Pts</th>}</tr></thead>
               <tbody>
                 {player.history.map((h) => (
                   <tr key={h.eventId}>
                     <td><Link to={`/events/${h.eventId}`}>{h.eventName}</Link><div className="muted" style={{ fontSize: 13 }}>{formatDate(h.date)}</div></td>
-                    <td className="num">{h.record}</td>
-                    <td className="num">{h.vp}</td>
-                    <td style={{ fontWeight: finishRank(h.finish) <= 1 ? 600 : 400, color: h.finish === 'Champion' ? 'var(--brick)' : 'var(--ink)' }}>{h.finish}</td>
-                    <td className="num">{h.points}</td>
+                    {VIS.performanceStats && <><td className="num">{h.record}</td><td className="num">{h.vp}</td></>}
+                    <td style={{ fontWeight: finishRank(h.finish) <= 1 ? 600 : 400, color: h.finish === 'Champion' ? 'var(--brick)' : 'var(--ink)' }}>{h.finish === 'Prelims' && !VIS.performanceStats ? 'Played' : h.finish}</td>
+                    {VIS.seasonRace && <td className="num">{h.points}</td>}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
+        {sideCol && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+          {VIS.headToHead && (
           <div>
             <h2 style={{ fontSize: 30, fontWeight: 600, marginBottom: 16 }}>Head to head</h2>
             <div className="card" style={{ padding: '6px 22px' }}>
@@ -122,6 +135,8 @@ export default function PlayerProfile() {
               <p className="muted" style={{ fontSize: 13, padding: '12px 0' }}>Most-played opponents. Red: games {player.name.split(' ')[0]} won at a shared table. Grey: games they won.</p>
             </div>
           </div>
+          )}
+          {VIS.seasonRace && (
           <div>
             <h2 style={{ fontSize: 30, fontWeight: 600, marginBottom: 16 }}>Points by event</h2>
             <div className="vbars">
@@ -134,7 +149,9 @@ export default function PlayerProfile() {
             </div>
             <div className="vbars-labels">{chrono.map((h) => <span key={h.eventId}>{formatDate(h.date, { month: 'short', year: '2-digit' })}</span>)}</div>
           </div>
+          )}
         </div>
+        )}
       </section>
 
       {shareable && (
@@ -146,7 +163,7 @@ export default function PlayerProfile() {
               <div style={{ position: 'relative' }}>
                 <div style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 52, lineHeight: 1 }}>{shareable.finish === 'Champion' ? 'Champion.' : shareable.finish === 'Final table' ? 'Final table.' : 'Top 16.'}</div>
                 <div style={{ fontFamily: 'var(--display)', fontWeight: 600, fontSize: 26, marginTop: 8 }}>{player.name}</div>
-                <div className="mono" style={{ color: '#CFC8BB', fontSize: 14, marginTop: 6 }}>Prelims {shareable.record}   {shareable.vp} VP</div>
+                {VIS.performanceStats && <div className="mono" style={{ color: '#CFC8BB', fontSize: 14, marginTop: 6 }}>Prelims {shareable.record}   {shareable.vp} VP</div>}
               </div>
               <span className="mono" style={{ color: '#9A958C', fontSize: 13, position: 'relative' }}>nycatan.com</span>
             </div>

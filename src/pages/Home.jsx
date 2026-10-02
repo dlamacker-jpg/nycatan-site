@@ -3,6 +3,7 @@ import { useData } from '../lib/DataContext.jsx';
 import { seasonStandings, formatRange } from '../lib/stats.js';
 import { REGISTER_URL, NATIONAL_HONORS, VIDEOS, DAY_STEPS } from '../content.js';
 import { PlayerLink, RankHex, PlayIcon, initials } from '../components/bits.jsx';
+import { VIS } from '../lib/visibility.js';
 
 export default function Home() {
   const { model } = useData();
@@ -44,11 +45,19 @@ export default function Home() {
               <PlayerLink name={latest.champion} style={{ display: 'block', marginTop: 10, fontFamily: 'var(--display)', fontWeight: 600, fontSize: 28, color: 'var(--paper)', textDecoration: 'none' }} />
               <div className="fact-sub" style={{ marginTop: 6 }}>Won the {latest.name}, {latest.season}</div>
             </div>
-            <div className="dark-card">
-              <div className="fact-label">{season} SEASON LEADER</div>
-              <PlayerLink name={race[0].name} slug={race[0].slug} style={{ display: 'block', marginTop: 10, fontFamily: 'var(--display)', fontWeight: 600, fontSize: 28, color: 'var(--paper)', textDecoration: 'none' }} />
-              <div className="fact-sub" style={{ marginTop: 6 }}>{race[0].points} points after {model.completed.filter((e) => e.season === season).length} events</div>
-            </div>
+            {VIS.seasonRace ? (
+              <div className="dark-card">
+                <div className="fact-label">{season} SEASON LEADER</div>
+                <PlayerLink name={race[0].name} slug={race[0].slug} style={{ display: 'block', marginTop: 10, fontFamily: 'var(--display)', fontWeight: 600, fontSize: 28, color: 'var(--paper)', textDecoration: 'none' }} />
+                <div className="fact-sub" style={{ marginTop: 6 }}>{race[0].points} points after {model.completed.filter((e) => e.season === season).length} events</div>
+              </div>
+            ) : (
+              <div className="dark-card">
+                <div className="fact-label">NEW HERE?</div>
+                <div style={{ fontFamily: 'var(--display)', fontWeight: 600, fontSize: 24, marginTop: 10, lineHeight: 1.2 }}>Read the rules and FAQ before your first event.</div>
+                <Link to="/faq" style={{ display: 'inline-block', marginTop: 12, color: 'var(--wheat)', fontWeight: 600 }}>Rules and FAQ</Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -63,6 +72,7 @@ export default function Home() {
       </div>
 
       <section className="wrap section split">
+{VIS.seasonRace ? (
         <div>
           <div className="section-head">
             <div><div className="eyebrow">{season} season race</div><h2>Who owns the city</h2></div>
@@ -85,6 +95,28 @@ export default function Home() {
             </table>
           </div>
         </div>
+        ) : (
+        <div>
+          <div className="section-head">
+            <div><div className="eyebrow">Recent finals</div><h2>Who made the final table</h2></div>
+            <Link to="/events" style={{ fontWeight: 600, padding: '12px 0' }}>All results</Link>
+          </div>
+          <div className="table-scroll">
+            <table className="table">
+              <thead><tr><th>Event</th><th>Champion</th><th className="hide-sm">Finalists</th></tr></thead>
+              <tbody>
+                {model.completed.slice(-6).reverse().map((e) => (
+                  <tr key={e.id}>
+                    <td><Link to={`/events/${e.id}`}>{e.name} {e.season}</Link><div className="muted" style={{ fontSize: 13 }}>Hosted by {e.organizer}</div></td>
+                    <td><PlayerLink name={e.champion} /></td>
+                    <td className="hide-sm" style={{ fontSize: 14, color: 'var(--ink-2)' }}>{e.finalTable.filter((x) => !x.win).map((x) => x.player).join(', ')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        )}
         <div>
           <div className="section-head">
             <div><div className="eyebrow">Latest results</div><h2>{latest.name}</h2></div>
@@ -153,7 +185,7 @@ export default function Home() {
 
       <section id="first-timers" className="steps">
         <div className="wrap">
-          <div className="section-head"><div><div className="eyebrow">First tournament?</div><h2>The whole day, start to finish</h2></div></div>
+          <div className="section-head"><div><div className="eyebrow">First tournament?</div><h2>The whole day, start to finish</h2></div><Link to="/faq" style={{ fontWeight: 600, padding: '12px 0' }}>Full rules and FAQ</Link></div>
           <div className="grid-5">
             {DAY_STEPS.map((s) => (
               <div className="step" key={s.title}>

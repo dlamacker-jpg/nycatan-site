@@ -10,6 +10,7 @@ import HallOfFame from './pages/HallOfFame.jsx';
 import Players from './pages/Players.jsx';
 import PlayerProfile from './pages/PlayerProfile.jsx';
 import { EventList, EventRecap } from './pages/Events.jsx';
+import Faq from './pages/Faq.jsx';
 
 function NotFound() {
   return <div className="wrap page-head"><h1>Nothing here</h1><p><Link to="/">Back home</Link></p></div>;
@@ -29,6 +30,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="players/:slug" element={<PlayerProfile />} />
             <Route path="events" element={<EventList />} />
             <Route path="events/:id" element={<EventRecap />} />
+            <Route path="faq" element={<Faq />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

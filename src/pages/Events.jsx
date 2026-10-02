@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useData } from '../lib/DataContext.jsx';
 import { formatRange, toCsv } from '../lib/stats.js';
 import { PlayerLink, DownloadIcon, downloadText, pct } from '../components/bits.jsx';
+import { VIS } from '../lib/visibility.js';
 
 export function EventList() {
   const { model } = useData();
@@ -19,12 +20,13 @@ export function EventList() {
           <h2 style={{ fontSize: 28, fontWeight: 600, marginBottom: 16 }}>{season}</h2>
           <div className="table-scroll">
             <table className="table">
-              <thead><tr><th>Event</th><th className="hide-sm">Date</th><th className="num">Players</th><th>Champion</th></tr></thead>
+              <thead><tr><th>Event</th><th className="hide-sm">Date</th><th className="hide-sm">Host</th><th className="num">Players</th><th>Champion</th></tr></thead>
               <tbody>
                 {events.map((e) => (
                   <tr key={e.id}>
                     <td><Link to={`/events/${e.id}`}>{e.name}</Link></td>
                     <td className="hide-sm muted">{formatRange(e.start_date, e.end_date)}</td>
+                    <td className="hide-sm muted">{e.organizer}</td>
                     <td className="num">{e.fieldSize}</td>
                     <td><PlayerLink name={e.champion} /></td>
                   </tr>
@@ -59,10 +61,11 @@ export function EventRecap() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
             <span className="chip">{ev.fieldSize} players</span>
             <span className="chip">{twoDay ? '2 prelim days' : '1 prelim day'}</span>
+            <span className="chip">Hosted by {ev.organizer}</span>
             <span className="chip">Imported from BCP</span>
           </div>
         </div>
-        <button type="button" className="btn btn-ghost" onClick={exportCsv}><DownloadIcon /> Download results CSV</button>
+        {VIS.fullStandings && <button type="button" className="btn btn-ghost" onClick={exportCsv}><DownloadIcon /> Download results CSV</button>}
       </div>
 
       <section className="split" style={{ marginTop: 16 }}>
@@ -101,14 +104,14 @@ export function EventRecap() {
       <section className="section split-8-4" style={{ paddingTop: 64 }}>
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-            <h2 style={{ fontSize: 32, fontWeight: 600 }}>Prelim standings</h2>
-            <span className="muted" style={{ fontSize: 14 }}>All {ev.fieldSize} players.{twoDay ? ' Best day counts.' : ''}</span>
+            <h2 style={{ fontSize: 32, fontWeight: 600 }}>{VIS.fullStandings ? 'Prelim standings' : 'Made the cut'}</h2>
+            <span className="muted" style={{ fontSize: 14 }}>{VIS.fullStandings ? `All ${ev.fieldSize} players.` : `The top 16 who made the cut, of ${ev.fieldSize}.`}{twoDay ? ' Best day counts.' : ''}{!VIS.fullStandings && ev.bcp_url ? <> <a href={ev.bcp_url}>Full standings on BCP</a></> : ''}</span>
           </div>
           <div className="table-scroll">
             <table className="table">
               <thead><tr><th>Rank</th><th>Player</th>{twoDay && <th>Day</th>}<th className="num">W</th><th className="num">VP</th><th className="num">Table %</th><th>Result</th></tr></thead>
               <tbody>
-                {ev.standings.slice(0, showAll ? undefined : 32).map((r) => {
+                {ev.standings.slice(0, VIS.fullStandings ? (showAll ? undefined : 32) : 16).map((r) => {
                   const f = ev.finish.get(r.player);
                   return (
                     <tr key={r.player} style={r.rank === 17 ? { borderTop: '2px dashed var(--brick)' } : undefined}>
@@ -125,7 +128,7 @@ export function EventRecap() {
               </tbody>
             </table>
           </div>
-          {ev.standings.length > 32 && (
+          {VIS.fullStandings && ev.standings.length > 32 && (
             <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={() => setShowAll(!showAll)}>
               {showAll ? 'Show top 32' : `Show all ${ev.standings.length} players`}
             </button>

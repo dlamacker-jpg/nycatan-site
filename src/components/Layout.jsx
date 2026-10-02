@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { REGISTER_URL } from '../content.js';
 import { useData } from '../lib/DataContext.jsx';
+import { IS_PREVIEW } from '../lib/visibility.js';
 
 const LINKS = [
   ['/', 'Home'],
   ['/season', 'Season'],
   ['/hall-of-fame', 'Hall of Fame'],
   ['/players', 'Players'],
-  ['/events', 'Results']
+  ['/events', 'Results'],
+  ['/faq', 'Rules & FAQ']
 ];
 
 export function Brand({ light }) {
@@ -28,6 +30,14 @@ export default function Layout() {
 
   return (
     <>
+      {IS_PREVIEW && (
+        <div className="preview-bar">
+          <div className="wrap">
+            <span><strong>Organizer preview:</strong> showing stats that are hidden from the public site.</span>
+            <a href="?show=default">Back to public view</a>
+          </div>
+        </div>
+      )}
       <header className="site-header">
         <div className="wrap">
           <Brand />
@@ -58,6 +68,7 @@ export default function Layout() {
           <Brand light />
           <span>Results imported from Best Coast Pairings after every event.</span>
           <span style={{ color: '#9A958C', fontSize: 13 }}>CATAN is a trademark of CATAN GmbH. Not an official CATAN site.</span>
+          {!IS_PREVIEW && <a href="?show=all" style={{ color: '#9A958C', fontSize: 13 }}>Organizer preview</a>}
         </div>
       </footer>
     </>

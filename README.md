@@ -45,6 +45,30 @@ Or with the Railway CLI from this folder: `railway login`, `railway init`, `rail
 **Open item:** this is a normalized format, not BCP's exact export. Once we have one real BCP CSV,
 a small converter (`scripts/`) maps BCP's columns into this shape. That is the only BCP-specific code.
 
+## What the public sees
+
+Set in `src/content.js` under `VISIBILITY`. All off by default after community feedback
+(rep blocking, and players who rank low feeling bad about it):
+
+| flag | when on |
+|------|---------|
+| `seasonRace` | season points table, leader chart, points on profiles |
+| `performanceStats` | win rate, average VP, prelim records, Hall of Fame win-rate and VP boards |
+| `headToHead` | opponent records on player profiles |
+| `fullStandings` | every player on event pages (off: top 16 only, plus a BCP link if `bcp_url` is set) |
+
+Always public: champions, finalists, top 16 cuts, attendance.
+Add `?show=all` to any URL (or use "Organizer preview" in the footer) to see everything without changing the public site. `?show=default` turns it off.
+
+## Rules and FAQ
+
+`src/faq.js`. Summarizes the official CATAN Championship rules plus NYCatan's format.
+Lines marked `[ORGANIZER: ...]` need answers: entry fee, refunds, late policy, what to bring, which turn timer option, whether qualifier winners can still play non-qualifier events.
+
+## Multiple organizers
+
+`events.csv` has an `organizer` column. Any affiliated event (Andrew's, Tony's, Demar's) counts toward the same season and Hall of Fame. Sample host assignments are invented.
+
 ## Assumptions to confirm with Andrew
 
 - Season points scale (`src/content.js`, `SEASON_POINTS`) is a proposal: champion 100, final table 60, semifinal 35, 10 per prelim win, 5 for playing.

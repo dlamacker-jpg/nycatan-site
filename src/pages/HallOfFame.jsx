@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { useData } from '../lib/DataContext.jsx';
 import { aggregate, leaderTimeline } from '../lib/stats.js';
 import { NATIONAL_HONORS } from '../content.js';
+import { Link } from 'react-router-dom';
 import { PlayerLink, Segmented, pct } from '../components/bits.jsx';
+import { VIS } from '../lib/visibility.js';
 
 const PALETTE = ['#E0B356', '#C9563B', '#3E9A70', '#6B8FB8', '#B09A63', '#A77BB5', '#D98C5F', '#7FB3A3'];
 
@@ -91,41 +93,63 @@ export default function HallOfFame() {
       <section className="wrap grid-2" style={{ paddingTop: 64 }}>
         <Board title="Most decorated" sub="Deep runs, by finish" tabs={['Titles', 'Final', 'Top 16']} tab={tabs.titles} setTab={set('titles')}
           rows={rank(rows, (r) => r[titleKey], String, () => titleNote)} />
+        {VIS.performanceStats && (
+          <>
         <Board title="Win rate" sub="Share of all games won. Four-player tables, so 25% is par." tabs={mins.map((m) => `${m}+ G`)} tab={tabs.win} setTab={set('win')}
           rows={rank(rows.filter((r) => r.games >= winMin), (r) => r.winRate, pct, (r) => `${r.wins}-${r.games - r.wins}`)} />
         <Board title="Average VP" sub="Points per game across prelims and cut rounds" tabs={mins.map((m) => `${m}+ G`)} tab={tabs.vp} setTab={set('vp')}
           rows={rank(rows.filter((r) => r.games >= vpMin), (r) => r.avgVp, (v) => v.toFixed(2), (r) => `${r.games} games`)} />
+          </>
+        )}
         <Board title="Iron players" sub="Showed up the most" tabs={['Events', 'Games']} tab={tabs.apps} setTab={set('apps')}
           rows={rank(rows, (r) => (tabs.apps === 0 ? r.events : r.games), String, () => (tabs.apps === 0 ? 'events' : 'games'))} />
       </section>
 
+      {VIS.seasonRace && (
       <section className="wrap" style={{ paddingTop: 56, paddingBottom: 72 }}>
-        <div className="section-head">
-          <div>
-            <h2 style={{ fontSize: 32, fontWeight: 600 }}>Season leader after every event</h2>
-            <p style={{ color: 'var(--night-muted)', marginTop: 8, fontSize: 14 }}>Points reset each January. Bar height is the leader's season points.</p>
+          <div className="section-head">
+            <div>
+              <h2 style={{ fontSize: 32, fontWeight: 600 }}>Season leader after every event</h2>
+              <p style={{ color: 'var(--night-muted)', marginTop: 8, fontSize: 14 }}>Points reset each January. Bar height is the leader's season points.</p>
+            </div>
           </div>
-        </div>
-        <div className="hof-chart">
-          <div className="table-scroll">
-            <div style={{ minWidth: 720 }}>
-              <div className="vbars">
-                {timeline.map((t) => (
-                  <div key={t.eventId}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: colorOf(t.leader), textAlign: 'center', lineHeight: 1.2 }}>{t.leader.split(' ')[0]}</span>
-                    <span className="mono" style={{ fontSize: 12, color: 'var(--night-muted)' }}>{t.points}</span>
-                    <div className="b" style={{ height: `${(t.points / maxPts) * 170}px`, background: colorOf(t.leader) }} />
-                  </div>
-                ))}
-              </div>
-              <div className="vbars-labels">
-                {timeline.map((t) => <span key={t.eventId}>{t.label}<br />{t.season}</span>)}
+          <div className="hof-chart">
+            <div className="table-scroll">
+              <div style={{ minWidth: 720 }}>
+                <div className="vbars">
+                  {timeline.map((t) => (
+                    <div key={t.eventId}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: colorOf(t.leader), textAlign: 'center', lineHeight: 1.2 }}>{t.leader.split(' ')[0]}</span>
+                      <span className="mono" style={{ fontSize: 12, color: 'var(--night-muted)' }}>{t.points}</span>
+                      <div className="b" style={{ height: `${(t.points / maxPts) * 170}px`, background: colorOf(t.leader) }} />
+                    </div>
+                  ))}
+                </div>
+                <div className="vbars-labels">
+                  {timeline.map((t) => <span key={t.eventId}>{t.label}<br />{t.season}</span>)}
+                </div>
               </div>
             </div>
           </div>
+        </section>
+      )}
+      <section className="wrap" style={{ paddingTop: 56, paddingBottom: 72 }}>
+        <div className="section-head">
+          <div>
+            <h2 style={{ fontSize: 32, fontWeight: 600 }}>Every final table</h2>
+            <p style={{ color: 'var(--night-muted)', marginTop: 8, fontSize: 14 }}>The full record of champions and finalists across affiliated NYCatan events.</p>
+          </div>
+        </div>
+        <div className="grid-3">
+          {[...model.completed].reverse().map((e) => (
+            <div key={e.id} className="hof-card" style={{ gap: 10, padding: 24 }}>
+              <Link to={`/events/${e.id}`} className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'var(--wheat)', textDecoration: 'none' }}>{e.name.toUpperCase()} {e.season}</Link>
+              <PlayerLink name={e.champion} style={{ fontFamily: 'var(--display)', fontWeight: 600, fontSize: 24, textDecoration: 'none' }} />
+              <span style={{ fontSize: 14, color: 'var(--night-muted)' }}>with {e.finalTable.filter((x) => !x.win).map((x) => x.player).join(', ')}</span>
+            </div>
+          ))}
         </div>
       </section>
-
       <section className="honors">
         <div className="wrap split" style={{ alignItems: 'center' }}>
           <div>
