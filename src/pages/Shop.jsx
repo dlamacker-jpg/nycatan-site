@@ -35,6 +35,17 @@ export function Art({ kind }) {
       </svg>
     );
   }
+  if (kind === 'ore-tee') {
+    return (
+      <svg viewBox="0 0 320 240" role="img" aria-label="Ore is for whores T-shirt illustration">
+        <rect width="320" height="240" fill="#EDE5D7" />
+        <path d="M110 30 L140 20 Q160 34 180 20 L210 30 L258 62 L238 96 L214 84 L214 222 L106 222 L106 84 L82 96 L62 62 Z" fill="#5E646C" />
+        <Hex x={140} y={78} s={40} fill="#C9CDD2" stroke="#2A2E36" />
+        <text x="160" y="140" textAnchor="middle" fill="#F4EFE6" fontFamily="Bricolage Grotesque, sans-serif" fontWeight="800" fontSize="15">ORE IS FOR</text>
+        <text x="160" y="160" textAnchor="middle" fill="#F4EFE6" fontFamily="Bricolage Grotesque, sans-serif" fontWeight="800" fontSize="15">WHORES</text>
+      </svg>
+    );
+  }
   if (kind === 'pin') {
     return (
       <svg viewBox="0 0 320 240" role="img" aria-label="Enamel pin illustration">

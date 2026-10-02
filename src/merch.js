@@ -38,6 +38,15 @@ export const MERCH = [
     art: 'pin'
   },
   {
+    id: 'ore-tee',
+    name: '"Ore is for whores" tee',
+    blurb: 'For everyone who has hoarded ore and still never got that city. Idea credit: Karla. 18+ events, 18+ shirt.',
+    price: '[PRICE]',
+    status: 'coming',
+    buyUrl: '',
+    art: 'ore-tee'
+  },
+  {
     id: 'tote',
     name: 'Game night tote',
     blurb: 'Canvas tote sized for a base game box, a dice tray and snacks.',
